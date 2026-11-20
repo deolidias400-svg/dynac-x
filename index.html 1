@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DYNAC X — Portal dos Ouvintes</title>
+  <style>
+    :root {
+      --bg-dark: #070913;
+      --bg-panel: #10162b;
+      --bg-card: #151e3a;
+      --neon-cyan: #00f0ff;
+      --neon-pink: #ff2a85;
+      --neon-gold: #ffcc00;
+      --text-main: #eef3ff;
+      --text-muted: #9aa7cc;
+      --border-glow: rgba(0, 240, 255, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body.dynac-portal-body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255, 42, 133, 0.14), transparent 35%),
+        radial-gradient(circle at 85% 20%, rgba(0, 240, 255, 0.14), transparent 40%),
+        linear-gradient(180deg, #060811 0%, #0b1024 100%);
+      color: var(--text-main);
+    }
+
+    .dx-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 22px;
+      background: rgba(8, 12, 26, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-glow);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .dx-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .dx-logo {
+      font-weight: 900;
+      font-size: 1.45rem;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.65);
+    }
+
+    .dx-logo span {
+      color: var(--neon-gold);
+      text-shadow: 0 0 12px rgba(255, 204, 0, 0.65);
+    }
+
+    .dx-tag {
+      font-size: 0.75rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 42, 133, 0.5);
+      color: #ff85b8;
+      background: rgba(255, 42, 133, 0.1);
+    }
+
+    .dx-nav-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .dx-btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .dx-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.28);
+    }
+
+    .dx-btn.primary {
+      background: linear-gradient(90deg, #ff2a85, #7928ca);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .dx-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    .dx-hero {
+      background: linear-gradient(135deg, rgba(16, 22, 43, 0.95), rgba(24, 18, 48, 0.9));
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .dx-hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      color: #fff;
+    }
+
+    .dx-hero p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .dx-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .dx-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .dx-filter-btn {
+      background: var(--bg-panel);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dx-filter-btn.active,
+    .dx-filter-btn:hover {
+      color: #060811;
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      font-weight: 700;
+    }
+
+    .dx-search {
+      min-width: 220px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      background: var(--bg-panel);
+      color: var(--text-main);
+      font-size: 0.92rem;
+    }
+
+    .dx-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .dx-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--bg-card);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 14px;
+      padding: 18px;
+      transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dx-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 10px 24px rgba(0, 240, 255, 0.14);
+    }
+
+    .dx-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .dx-badge {
+      font-size: 0.74rem;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--neon-cyan);
+      font-weight: 600;
+    }
+
+    .dx-status-tag {
+      font-size: 0.72rem;
+      color: var(--neon-gold);
+    }
+
+    .dx-card h3 {
+      margin: 6px 0 6px;
+      font-size: 1.08rem;
+      color: #fff;
+    }
+
+    .dx-card p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    #dx-stage-view {
+      display: none;
+    }
+
+    .dx-stage-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+
+    .dx-stage-title {
+      font-weight: 700;
+      color: var(--neon-gold);
+      font-size: 1.05rem;
+    }
+
+    #dx-module-host {
+      min-height: 520px;
+      background: #090d1a;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 14px;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .dx-pending-box {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body class="dynac-portal-body">
+  <header class="dx-header">
+    <div class="dx-brand" onclick="DynacPortal.showCatalog()">
+      <div class="dx-logo">DYNAC <span>X</span></div>
+      <span class="dx-tag">ESPAÇO DOS OUVINTES</span>
+    </div>
+    <div class="dx-nav-actions">
+      <button class="dx-btn" onclick="DynacPortal.showCatalog()">Catálogo (23)</button>
+      <button class="dx-btn primary" onclick="DynacPortal.openModule('web-radio')">Web Radio</button>
+    </div>
+  </header>
+
+  <main class="dx-container">
+    <section id="dx-catalog-view">
+      <div class="dx-hero">
+        <h1>Central Interativa Dynac X</h1>
+        <p>Escolha um jogo, desafio de lógica, atração do cassino ou a rádio para jogar direto no navegador.</p>
+      </div>
+
+      <div class="dx-toolbar">
+        <div class="dx-filters" id="dx-filters">
+          <button class="dx-filter-btn active" data-cat="todos">Todos (23)</button>
+          <button class="dx-filter-btn" data-cat="arcade">Arcade</button>
+          <button class="dx-filter-btn" data-cat="estrategia">Estratégia & Lógica</button>
+          <button class="dx-filter-btn" data-cat="cassino">Cassino</button>
+          <button class="dx-filter-btn" data-cat="midia">Rádio</button>
+        </div>
+        <input type="search" id="dx-search" class="dx-search" placeholder="Buscar jogo ou atração..." />
+      </div>
+
+      <div class="dx-grid" id="dx-grid"></div>
+    </section>
+
+    <section id="dx-stage-view">
+      <div class="dx-stage-bar">
+        <div class="dx-stage-title" id="dx-stage-title">Módulo</div>
+        <div class="dx-nav-actions">
+          <button class="dx-btn" onclick="DynacPortal.restartCurrent()">Reiniciar</button>
+          <button class="dx-btn" onclick="DynacPortal.showCatalog()">Voltar ao Catálogo</button>
+        </div>
+      </div>
+      <div id="dx-module-host"></div>
+    </section>
+  </main>
+
+  <script>
+    const DYNAC_MODULES = {
+      /* DYNAC_X_MODULES_START */
+      "ascensao-cosmica": {
+        title: "Ascensão Cósmica - Dynac X",
+        cat: "arcade",
+        desc: "Plataforma vertical com inimigo e artefato.",
+        mount(host, registerCleanup) {
+          host.innerHTML = `
+            <div style="text-align:center;">
+              <p style="margin:0 0 8px;color:#00f0ff;">Setas Esquerda/Direita ou A/D para mover • Colete o artefato e evite o inimigo • Pontos: <span id="ac-pts">0</span></p>
+              <canvas id="ac-canvas" width="520" height="420" style="background:#050814;border:1px solid #00f0ff;border-radius:8px;max-width:100%;"></canvas>
+            </div>`;
+          const canvas = host.querySelector("#ac-canvas");
+          const ctx = canvas.getContext("2d");
+          const ptsEl = host.querySelector("#ac-pts");
+          let player = { x: 245, y: 370, w: 28, h: 28, vx: 0, vy: 0 };
+          let artifact = { x: 250, y: 90, r: 10 };
+          let enemy = { x: 100, y: 210, w: 30, h: 20, dir: 2.5 };
+          const platforms = [
+            { x: 180, y: 405, w: 160, h: 12 },
+            { x: 70, y: 325, w: 130, h: 12 },
+            { x: 310, y: 250, w: 130, h: 12 },
+            { x: 120, y: 175, w: 140, h: 12 },
+            { x: 280, y: 110, w: 140, h: 12 }
+          ];
+          let pts = 0, alive = true;
+          const keys = {};
+          const onKeyDown = (e) => { keys[e.key.toLowerCase()] = true; if (e.key === " ") player.vy = -8; };
+          const onKeyUp = (e) => { keys[e.key.toLowerCase()] = false; };
+          window.addEventListener("keydown", onKeyDown);
+          window.addEventListener("keyup", onKeyUp);
+          let rafId;
+          function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (alive) {
+              player.vx = (keys["arrowleft"] || keys["a"] ? -4.5 : 0) + (keys["arrowright"] || keys["d"] ? 4.5 : 0);
+              player.vy += 0.35;
+              player.x = Math.max(0, Math.min(canvas.width - player.w, player.x + player.vx));
+              player.y += player.vy;
+              platforms.forEach((p) => {
+                if (player.vy > 0 && player.x + player.w > p.x && player.x < p.x + p.w && player.y + player.h >= p.y && player.y + player.h <= p.y + p.h + 10) {
+                  player.y = p.y - player.h;
+                  player.vy = -7.5;
+                }
+              });
+              if (player.y > canvas.height) { player.y = 360; player.vy = -7; pts = Math.max(0, pts - 1); ptsEl.textContent = pts; }
+              enemy.x += enemy.dir;
+              if (enemy.x <= 0 || enemy.x + enemy.w >= canvas.width) enemy.dir *= -1;
+              if (player.x < enemy.x + enemy.w && player.x + player.w > enemy.x && player.y < enemy.y + enemy.h && player.y + player.h > enemy.y) {
+                pts = Math.max(0, pts - 2);
+                ptsEl.textContent = pts;
+                player.x = 245; player.y = 360; player.vy = -5;
+              }
+              const dx = (player.x + player.w / 2) - artifact.x;
+              const dy = (player.y + player.h / 2) - artifact.y;
+              if (Math.hypot(dx, dy) < artifact.r + 16) {
+                pts += 10;
+                ptsEl.textContent = pts;
+                artifact.x = 50 + Math.random() * (canvas.width - 100);
+                artifact.y = 50 + Math.random() * 190;
+              }
+            }
+            ctx.fillStyle = "#1e3a8a";
+            platforms.forEach((p) => ctx.fillRect(p.x, p.y, p.w, p.h));
+            ctx.fillStyle = "#00f0ff";
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+            ctx.fillStyle = "#ff2a85";
+            ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+            ctx.beginPath();
+            ctx.arc(artifact.x, artifact.y, artifact.r, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffcc00";
+            ctx.fill();
+            rafId = requestAnimationFrame(loop);
+          }
+          loop();
+          registerCleanup(() => {
+            cancelAnimationFrame(rafId);
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+          });
+        }
+      },
+      "bolas-coloridas": {
+        title: "Jogo de Bolas Coloridas",
+        cat: "arcade",
+        desc: "Lançamento direcional por mouse com níveis de dificuldade.",
+        mount(host, registerCleanup) {
+          host.innerHTML = `
+            <div style="text-align:center;">
+              <div style="margin-bottom:8px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;align-items:center;">
+                <label>Dificuldade: <select id="bc-diff" style="padding:4px 8px;border-radius:6px;"><option value="3">Fácil</option><option value="6" selected>Médio</option><option value="10">Difícil</option></select></label>
+                <span>Acertos: <strong id="bc-score">0</strong></span>
+              </div>
+              <canvas id="bc-canvas" width="520" height="400" style="background:#070c1c;border:1px solid #00f0ff;border-radius:8px;cursor:crosshair;max-width:100%;"></canvas>
+            </div>`;
+          const canvas = host.querySelector("#bc-canvas");
+          const ctx = canvas.getContext("2d");
+          const scoreEl = host.querySelector("#bc-score");
+          const diffSel = host.querySelector("#bc-diff");
+          const palette = ["#ff2a85", "#00f0ff", "#ffcc00", "#39ff14"];
+          let score = 0;
+          let ball = null;
+          let target = { x: 260, y: 80, r: 22, color: palette[0], vx: 2.5 };
+          const onClick = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const angle = Math.atan2(my - (canvas.height - 25), mx - canvas.width / 2);
+            const spd = Number(diffSel.value) + 4;
+            ball = { x: canvas.width / 2, y: canvas.height - 25, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, r: 10, color: palette[Math.floor(Math.random() * palette.length)] };
+          };
+          canvas.addEventListener("click", onClick);
+          let rafId;
+          function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const spdMod = Number(diffSel.value) / 5;
+            target.x += target.vx * spdMod;
+            if (target.x - target.r < 0 || target.x + target.r > canvas.width) target.vx *= -1;
+            ctx.beginPath(); ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+            ctx.fillStyle = target.color; ctx.fill();
+            ctx.beginPath(); ctx.arc(canvas.width / 2, canvas.height - 25, 14, 0, Math.PI * 2);
+            ctx.fillStyle = "#9aa7cc"; ctx.fill();
+            if (ball) {
+              ball.x += ball.vx; ball.y += ball.vy;
+              ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+              ctx.fillStyle = ball.color; ctx.fill();
+              if (Math.hypot(ball.x - target.x, ball.y - target.y) < ball.r + target.r) {
+                score += ball.color === target.color ? 2 : 1;
+                scoreEl.textContent = score;
+                target.color = palette[Math.floor(Math.random() * palette.length)];
+                ball = null;
+              } else if (ball.x < 0 || ball.x > canvas.width || ball.y < 0 || ball.y > canvas.height) {
+                ball = null;
+              }
+            }
+            rafId = requestAnimationFrame(loop);
+          }
+          loop();
+          registerCleanup(() => { cancelAnimationFrame(rafId); canvas.removeEventListener("click", onClick); });
+        }
+      },
+      "web-radio": {
+        title: "Intercontinental Web Radio - Interstelar",
+        cat: "midia",
+        desc: "Player Web Audio API com 7 temas visuais.",
+        mount(host) {
+          const themes = [
+            { name: "Interstelar", bg: "#090e26", accent: "#00f0ff" },
+            { name: "Aurora Dourada", bg: "#1b1406", accent: "#ffcc00" },
+            { name: "Cyber Neon", bg: "#1c0924", accent: "#ff2a85" },
+            { name: "Matrix Verde", bg: "#061a0e", accent: "#39ff14" },
+            { name: "Nebulosa Violeta", bg: "#150a2e", accent: "#b86bff" },
+            { name: "Solaris Laranja", bg: "#241106", accent: "#ff7b00" },
+            { name: "Oceano Profundo", bg: "#051923", accent: "#38bdf8" }
+          ];
+          host.innerHTML = `
+            <div id="wr-box" style="padding:24px;border-radius:12px;background:${themes[0].bg};border:1px solid ${themes[0].accent};text-align:center;transition:all 0.25s;">
+              <h2 style="margin-top:0;color:${themes[0].accent};" id="wr-title">Intercontinental Web Radio — ${themes[0].name}</h2>
+              <p style="color:#cbd5e1;">Selecione um tema visual e controle a transmissão ao vivo.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0;" id="wr-themes"></div>
+              <div style="margin:16px 0;">
+                <button id="wr-play" class="dx-btn primary">▶ Tocar / Pausar</button>
+                <span style="margin-left:12px;">Volume: <input id="wr-vol" type="range" min="0" max="1" step="0.05" value="0.7" /></span>
+              </div>
+              <audio id="wr-audio" preload="none" src="https://stream.zeno.fm/wzcgaal0dnltv"></audio>
+              <div id="wr-status" style="font-size:0.9rem;color:#9aa7cc;">Pronto para conectar.</div>
+            </div>`;
+          const box = host.querySelector("#wr-box");
+          const titleEl = host.querySelector("#wr-title");
+          const themesWrap = host.querySelector("#wr-themes");
+          const audio = host.querySelector("#wr-audio");
+          const playBtn = host.querySelector("#wr-play");
+          const vol = host.querySelector("#wr-vol");
+          const status = host.querySelector("#wr-status");
+          themes.forEach((t, idx) => {
+            const b = document.createElement("button");
+            b.className = "dx-filter-btn" + (idx === 0 ? " active" : "");
+            b.textContent = t.name;
+            b.onclick = () => {
+              themesWrap.querySelectorAll("button").forEach((btn) => btn.classList.remove("active"));
+              b.classList.add("active");
+              box.style.background = t.bg;
+              box.style.borderColor = t.accent;
+              titleEl.style.color = t.accent;
+              titleEl.textContent = `Intercontinental Web Radio — ${t.name}`;
+            };
+            themesWrap.appendChild(b);
+          });
+          vol.oninput = () => { audio.volume = Number(vol.value); };
+          playBtn.onclick = async () => {
+            if (audio.paused) {
+              try { await audio.play(); status.textContent = "Transmitindo ao vivo..."; }
+              catch { status.textContent = "Não foi possível iniciar o stream neste navegador."; }
+            } else {
+              audio.pause();
+              status.textContent = "Transmissão pausada.";
+            }
+          };
+        }
+      },
+      "bubble-shooter": {
+        title: "Bubble Shooter",
+        cat: "arcade",
+        desc: "Canhão horizontal e explosão por cor.",
+        mount(host, registerCleanup) {
+          host.innerHTML = `
+            <div style="text-align:center;">
+              <p style="margin:0 0 8px;color:#00f0ff;">Mova o mouse e clique para atirar • Pontos: <span id="bs-pts">0</span></p>
+              <canvas id="bs-canvas" width="480" height="400" style="background:#070c1c;border:1px solid #00f0ff;border-radius:8px;max-width:100%;"></canvas>
+            </div>`;
+          const canvas = host.querySelector("#bs-canvas");
+          const ctx = canvas.getContext("2d");
+          const ptsEl = host.querySelector("#bs-pts");
+          const colors = ["#ff2a85", "#00f0ff", "#ffcc00", "#39ff14"];
+          let pts = 0, aimX = canvas.width / 2, shot = null;
+          const bubbles = [];
+          for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 10; c++) {
+              bubbles.push({ x: 34 + c * 46, y: 34 + r * 42, r: 17, color: colors[(r + c) % colors.length], active: true });
+            }
+          }
+          let currentColor = colors[0];
+          const onMove = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            aimX = (e.clientX - rect.left) * (canvas.width / rect.width);
+          };
+          const onClick = () => {
+            if (shot) return;
+            const dx = aimX - canvas.width / 2;
+            const dy = -260;
+            const len = Math.hypot(dx, dy);
+            shot = { x: canvas.width / 2, y: canvas.height - 26, vx: (dx / len) * 8, vy: (dy / len) * 8, r: 16, color: currentColor };
+          };
+          canvas.addEventListener("mousemove", onMove);
+          canvas.addEventListener("click", onClick);
+          let rafId;
+          function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bubbles.forEach((b) => {
+              if (!b.active) return;
+              ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+              ctx.fillStyle = b.color; ctx.fill();
+            });
+            ctx.beginPath(); ctx.arc(canvas.width / 2, canvas.height - 26, 16, 0, Math.PI * 2);
+            ctx.fillStyle = currentColor; ctx.fill();
+            if (shot) {
+              shot.x += shot.vx; shot.y += shot.vy;
+              if (shot.x < shot.r || shot.x > canvas.width - shot.r) shot.vx *= -1;
+              ctx.beginPath(); ctx.arc(shot.x, shot.y, shot.r, 0, Math.PI * 2);
+              ctx.fillStyle = shot.color; ctx.fill();
+              for (const b of bubbles) {
+                if (b.active && Math.hypot(shot.x - b.x, shot.y - b.y) < shot.r + b.r) {
+                  if (b.color === shot.color) { b.active = false; pts += 10; ptsEl.textContent = pts; }
+                  shot = null;
+                  currentColor = colors[Math.floor(Math.random() * colors.length)];
+                  break;
+                }
+              }
+              if (shot && shot.y < 10) { shot = null; currentColor = colors[Math.floor(Math.random() * colors.length)]; }
+            }
+            rafId = requestAnimationFrame(loop);
+          }
+          loop();
+          registerCleanup(() => { cancelAnimationFrame(rafId); canvas.removeEventListener("mousemove", onMove); canvas.removeEventListener("click", onClick); });
+        }
+      },
+      "tenis": {
+        title: "Jogo de Tênis com Pontuação",
+        cat: "arcade",
+        desc: "Raquete solo com bola extra ao atingir 10 pontos.",
+        mount(host, registerCleanup) {
+          host.innerHTML = `
+            <div style="text-align:center;">
+              <p style="margin:0 0 8px;color:#00f0ff;">Mova o mouse na horizontal • Pontos: <span id="tn-pts">0</span></p>
+              <canvas id="tn-canvas" width="520" height="380" style="background:#081624;border:1px solid #00f0ff;border-radius:8px;max-width:100%;"></canvas>
+            </div>`;
+          const canvas = host.querySelector("#tn-canvas");
+          const ctx = canvas.getContext("2d");
+          const ptsEl = host.querySelector("#tn-pts");
+          let paddleX = 215, paddleW = 90, pts = 0, extraAdded = false;
+          const balls = [{ x: 260, y: 120, vx: 3.5, vy: 3.5, r: 9 }];
+          const onMove = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            paddleX = Math.max(0, Math.min(canvas.width - paddleW, ((e.clientX - rect.left) * (canvas.width / rect.width)) - paddleW / 2));
+          };
+          canvas.addEventListener("mousemove", onMove);
+          let rafId;
+          function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00f0ff";
+            ctx.fillRect(paddleX, canvas.height - 24, paddleW, 12);
+            balls.forEach((b) => {
+              b.x += b.vx; b.y += b.vy;
+              if (b.x < b.r || b.x > canvas.width - b.r) b.vx *= -1;
+              if (b.y < b.r) b.vy *= -1;
+              if (b.vy > 0 && b.y + b.r >= canvas.height - 24 && b.x >= paddleX && b.x <= paddleX + paddleW) {
+                b.vy = -Math.abs(b.vy);
+                pts += 1;
+                ptsEl.textContent = pts;
+                if (pts >= 10 && !extraAdded) { extraAdded = true; balls.push({ x: 180, y: 90, vx: -3.2, vy: 3.4, r: 9 }); }
+              }
+              if (b.y > canvas.height + 20) { b.x = 260; b.y = 100; b.vy = Math.abs(b.vy); }
+              ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+              ctx.fillStyle = "#ffcc00"; ctx.fill();
+            });
+            rafId = requestAnimationFrame(loop);
+          }
+          loop();
+          registerCleanup(() => { cancelAnimationFrame(rafId); canvas.removeEventListener("mousemove", onMove); });
+        }
+      },
+      "corrida-tempo": {
+        title: "Corrida Contra o Tempo",
+        cat: "arcade",
+        desc: "Desvie de obstáculos e colete bônus de tempo.",
+        mount(host, registerCleanup) {
+          host.innerHTML = `
+            <div style="text-align:center;">
+              <p style="margin:0 0 8px;color:#ffcc00;">Setas Esquerda/Direita • Tempo restante: <span id="ct-time">25</span>s • Pontos: <span id="ct-pts">0</span></p>
+              <canvas id="ct-canvas" width="380" height="400" style="background:#121524;border:1px solid #ffcc00;border-radius:8px;max-width:100%;"></canvas>
+            </div>`;
+          const canvas = host.querySelector("#ct-canvas");
+          const ctx = canvas.getContext("2d");
+          const timeEl = host.querySelector("#ct-time");
+          const ptsEl = host.querySelector("#ct-pts");
+          let carX = 170, timeLeft = 25, pts = 0;
+          let obs = { x: 80 + Math.random() * 200, y: -20, w: 36, h: 36, isBonus: false };
+          const keys = {};
+          const kd = (e) => { keys[e.key.toLowerCase()] = true; };
+          const ku = (e) => { keys[e.key.toLowerCase()] = false; };
+          window.addEventListener("keydown", kd);
+          window.addEventListener("keyup", ku);
+          const timerId = setInterval(() => {
+            if (timeLeft > 0) { timeLeft--; timeEl.textContent = timeLeft; }
+          }, 1000);
+          let rafId;
+          function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (timeLeft > 0) {
+              if (keys["arrowleft"] || keys["a"]) carX = Math.max(10, carX - 5);
+              if (keys["arrowright"] || keys["d"]) carX = Math.min(canvas.width - 46, carX + 5);
+              obs.y += 4.5;
+              const hit = obs.x < carX + 36 && obs.x + obs.w > carX && obs.y < canvas.height - 22 && obs.y + obs.h > canvas.height - 62;
+              if (hit) {
+                if (obs.isBonus) { timeLeft += 3; pts += 5; } else { pts = Math.max(0, pts - 2); }
+                timeEl.textContent = timeLeft; ptsEl.textContent = pts;
+                obs = { x: 20 + Math.random() * (canvas.width - 60), y: -30, w: 36, h: 36, isBonus: Math.random() < 0.35 };
+              } else if (obs.y > canvas.height) {
+                pts += 1; ptsEl.textContent = pts;
+                obs = { x: 20 + Math.random() * (canvas.width - 60), y: -30, w: 36, h: 36, isBonus: Math.random() < 0.35 };
+              }
+            }
+            ctx.fillStyle = "#00f0ff"; ctx.fillRect(carX, canvas.height - 62, 36, 42);
+            ctx.fillStyle = obs.isBonus ? "#39ff14" : "#ff2a85";
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            rafId = requestAnimationFrame(loop);
+          }
+          loop();
+          registerCleanup(() => { cancelAnimationFrame(rafId); clearInterval(timerId); window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku); });
+        }
+      }
+      /* DYNAC_X_MODULES_END */
+    };
+
+    const CATALOG_META = [
+      { id: "ascensao-cosmica", title: "Ascensão Cósmica - Dynac X", cat: "arcade", desc: "Plataforma vertical com inimigo e artefato.", ready: true },
+      { id: "bolas-coloridas", title: "Bolas Coloridas", cat: "arcade", desc: "Lançamento direcional por mouse com níveis.", ready: true },
+      { id: "web-radio", title: "Web Radio - Interstelar", cat: "midia", desc: "Player com 7 temas visuais para os ouvintes.", ready: true },
+      { id: "bubble-shooter", title: "Bubble Shooter", cat: "arcade", desc: "Canhão e explosão de bolhas por cor.", ready: true },
+      { id: "tenis", title: "Jogo de Tênis", cat: "arcade", desc: "Raquete solo com bola extra aos 10 pontos.", ready: true },
+      { id: "corrida-tempo", title: "Corrida Contra o Tempo", cat: "arcade", desc: "Desvie de obstáculos e colete bônus de tempo.", ready: true },
+      { id: "cidade-musical", title: "Cidade Musical", cat: "arcade", desc: "Defesa da cidade com canhão giratório.", ready: false },
+      { id: "pacman", title: "Pacman / Labirinto Retrô", cat: "arcade", desc: "Labirinto clássico retrô.", ready: false },
+      { id: "adivinhacao", title: "Jogo de Adivinhação", cat: "estrategia", desc: "Palpite de 1 a 100 com contagem de tentativas.", ready: false },
+      { id: "aviao", title: "Jogo de Avião", cat: "arcade", desc: "Voo vertical, tiros, inimigos e combustível.", ready: false },
+      { id: "pong", title: "Pong Finalizado", cat: "arcade", desc: "Jogador vs. IA com placar e controles.", ready: false },
+      { id: "jokenpo", title: "Pedra, Papel e Tesoura", cat: "estrategia", desc: "Disputa até 5 pontos contra a IA.", ready: false },
+      { id: "helicoptero", title: "Helicóptero Atração", cat: "cassino", desc: "Animação aérea com drone, hélices e luzes.", ready: false },
+      { id: "caca-niqueis", title: "Caça-Níqueis Avançada", cat: "cassino", desc: "3 rolos com seletor de símbolo e botões.", ready: false },
+      { id: "roleta-ventilador", title: "Roleta Estilo Ventilador", cat: "cassino", desc: "4 pás coloridas, seta e aposta por cor.", ready: false },
+      { id: "blackjack", title: "Blackjack", cat: "cassino", desc: "21 contra o Dealer com baralho e Ás.", ready: false },
+      { id: "damas", title: "Jogo de Damas", cat: "estrategia", desc: "Tabuleiro 8x8 contra a IA com captura.", ready: false },
+      { id: "xadrez", title: "Jogo de Xadrez", cat: "estrategia", desc: "Tabuleiro 8x8 com peças Unicode.", ready: false },
+      { id: "jogo-da-velha", title: "Jogo da Velha", cat: "estrategia", desc: "Grade 3x3 contra a IA com placar.", ready: false },
+      { id: "batalha-naval", title: "Batalha Naval", cat: "estrategia", desc: "Tabuleiros 10x10 jogador vs. IA.", ready: false },
+      { id: "genius", title: "Jogo Genius", cat: "estrategia", desc: "Sequência de cores 2x2 e níveis.", ready: false },
+      { id: "merlin", title: "Jogo Merlin Desafiante", cat: "estrategia", desc: "Grade 3x3 de memória com velocidade.", ready: false },
+      { id: "misterio-veu-da-noite", title: "Mistério em Véu da Noite", cat: "estrategia", desc: "Investigação, pistas e acusação final.", ready: false }
+    ];
+
+    const DynacPortal = (() => {
+      let currentId = null;
+      let cleanups = [];
+      let activeCat = "todos";
+      let searchTerm = "";
+
+      function runCleanups() {
+        cleanups.forEach((fn) => { try { fn(); } catch (_) {} });
+        cleanups = [];
+      }
+
+      function registerCleanup(fn) {
+        cleanups.push(fn);
+      }
+
+      function renderCatalog() {
+        const grid = document.getElementById("dx-grid");
+        grid.innerHTML = "";
+        const filtered = CATALOG_META.filter((item) => {
+          const matchCat = activeCat === "todos" || item.cat === activeCat;
+          const matchText = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || item.desc.toLowerCase().includes(searchTerm.toLowerCase());
+          return matchCat && matchText;
+        });
+
+        filtered.forEach((item) => {
+          const card = document.createElement("article");
+          card.className = "dx-card";
+          card.innerHTML = `
+            <div>
+              <div class="dx-card-top">
+                <span class="dx-badge">${item.cat.toUpperCase()}</span>
+                <span class="dx-status-tag">${item.ready ? "PRONTO" : "PRÓXIMO BLOCO"}</span>
+              </div>
+              <h3>${item.title}</h3>
+              <p>${item.desc}</p>
+            </div>
+            <button class="dx-btn ${item.ready ? "primary" : ""}" onclick="DynacPortal.openModule('${item.id}')">
+              ${item.ready ? "Abrir Agora" : "Ver Status"}
+            </button>`;
+          grid.appendChild(card);
+        });
+      }
+
+      function openModule(id) {
+        runCleanups();
+        currentId = id;
+        const meta = CATALOG_META.find((m) => m.id === id);
+        const mod = DYNAC_MODULES[id];
+        const host = document.getElementById("dx-module-host");
+        document.getElementById("dx-catalog-view").style.display = "none";
+        document.getElementById("dx-stage-view").style.display = "block";
+        document.getElementById("dx-stage-title").textContent = meta ? meta.title : id;
+        host.innerHTML = "";
+
+        if (mod && typeof mod.mount === "function") {
+          mod.mount(host, registerCleanup);
+        } else {
+          host.innerHTML = `<div class="dx-pending-box"><h3>${meta ? meta.title : id}</h3><p>Este módulo será encaixado no próximo bloco do código único.</p></div>`;
+        }
+      }
+
+      function restartCurrent() {
+        if (currentId) openModule(currentId);
+      }
+
+      function showCatalog() {
+        runCleanups();
+        currentId = null;
+        document.getElementById("dx-stage-view").style.display = "none";
+        document.getElementById("dx-catalog-view").style.display = "block";
+      }
+
+      document.querySelectorAll(".dx-filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".dx-filter-btn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeCat = btn.dataset.cat;
+          renderCatalog();
+        });
+      });
+
+      document.getElementById("dx-search").addEventListener("input", (e) => {
+        searchTerm = e.target.value;
+        renderCatalog();
+      });
+
+      renderCatalog();
+      return { openModule, restartCurrent, showCatalog };
+    })();
+  </script>
+</body>
+</html>
